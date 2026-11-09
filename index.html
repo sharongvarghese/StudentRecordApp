@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Records Management</title>
+    <!-- bootstarp css -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div class="container mt-5">
+      <h1 class="text-muted text-center">Student Records Management</h1>
+
+
+      <div class="d-flex justify-content-center mt-5">
+        <div class="shadow rounded-3 m-2 p-3" style="width: 400px">
+          <input
+            type="number"
+            id="studentId"
+            class="form-control mt-2"
+            placeholder="Enter Student ID"
+          />
+
+          <input
+            type="text"
+            id="studentName"
+            class="form-control mt-2"
+            placeholder="Enter Student Name"
+          />
+
+          <input
+            type="text"
+            id="studentCourse"
+            class="form-control mt-2"
+            placeholder="Enter Student Course"
+          />
+
+          <button
+            onclick="addStudent()"
+            id="submitBtn"
+            class="btn btn-primary mt-3 form-control"
+          >
+            Submit
+          </button>
+        </div>
+      </div>
+
+
+      <div class="container mt-5">
+        <table class="table table-bordered table-striped mt-5">
+          <thead class="table-dark">
+            <tr>
+              <th>Student ID</th>
+              <th>Student Name</th>
+              <th>Student Course</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody id="result"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+
+      let students = JSON.parse(localStorage.getItem("students")) || [];
+      let editIndex = -1;
+
+      function displayStudents() {
+        let html = "";
+        students.forEach((student, index) => {
+          html += `
+                <tr>
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.course}</td>
+
+                    <td>
+                        <button class="btn btn-warning btn-sm"
+                            onclick="editStudent(${index})">
+                            Edit
+                        </button>
+
+                        <button class="btn btn-danger btn-sm"
+                            onclick="deleteStudent(${index})">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("result").innerHTML = html;
+      }
+
+      function saveStudents() {
+        localStorage.setItem("students", JSON.stringify(students));
+      }
+
+      function addStudent() {
+        let id = document.getElementById("studentId").value.trim();
+        let name = document.getElementById("studentName").value.trim();
+        let course = document.getElementById("studentCourse").value.trim();
+
+        if (id === "" || name === "" || course === "") {
+          alert("Please fill all fields");
+          return;
+        }
+
+        let duplicate = students.some(
+          (student, index) => String(student.id) === id && index !== editIndex,
+        );
+
+        if (duplicate) {
+          alert("Student ID already exists!");
+          return;
+        }
+
+        let student = {
+          id: id,
+          name: name,
+          course: course,
+        };
+
+        if (editIndex === -1) {
+          students.push(student);
+
+          alert("Student added successfully!");
+        } else {
+          students[editIndex] = student;
+
+          alert("Student updated successfully!");
+
+          editIndex = -1;
+
+          document.getElementById("submitBtn").innerText = "Submit";
+        }
+
+        saveStudents();
+
+        displayStudents();
+
+        clearForm();
+      }
+
+      function editStudent(index) {
+        let student = students[index];
+
+        document.getElementById("studentId").value = student.id;
+        document.getElementById("studentName").value = student.name;
+        document.getElementById("studentCourse").value = student.course;
+
+        editIndex = index;
+
+        document.getElementById("submitBtn").innerText = "Update Student";
+      }
+
+      function deleteStudent(index) {
+        let confirmDelete = confirm(
+          "Are you sure you want to delete this student?",
+        );
+
+        if (confirmDelete) {
+          students.splice(index, 1);
+          saveStudents();
+          displayStudents();
+          alert("Student deleted successfully!");
+          clearForm();
+          editIndex = -1;
+          document.getElementById("submitBtn").innerText = "Submit";
+        }
+      }
+
+      function clearForm() {
+        document.getElementById("studentId").value = "";
+        document.getElementById("studentName").value = "";
+        document.getElementById("studentCourse").value = "";
+      }
+
+      displayStudents();
+    </script>
+  </body>
+</html>
